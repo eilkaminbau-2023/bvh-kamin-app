@@ -1,0 +1,27 @@
+'use client'
+
+import { useEffect } from 'react';
+import { useFirebase } from './FirebaseProvider';
+
+export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useFirebase();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      window.location.href = '/login';
+    }
+  }, [user, loading]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4">Laden...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return user ? <>{children}</> : null;
+};
