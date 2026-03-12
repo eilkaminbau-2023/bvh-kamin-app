@@ -6,7 +6,9 @@ import {
   deleteDoc, 
   doc, 
   getDocs, 
-  getDoc
+  getDoc,
+  query,
+  Query
 } from 'firebase/firestore';
 
 export const useFirestore = () => {
@@ -52,7 +54,7 @@ export const useFirestore = () => {
       const docRef = doc(db, collectionName, id);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        return { success: true, data: { id: docSnap.id, ...docSnap.data() } };
+        return { success: true, data: { id: docSnap.id, ...(docSnap.data() as any) } };
       } else {
         return { success: false, error: 'Doküman bulunamadı' };
       }
@@ -62,13 +64,21 @@ export const useFirestore = () => {
   };
 
   // Tüm belgeleri getir
-  const getDocuments = async (collectionName: string) => {
+  const getDocuments = async (collectionName: string, conditions?: any[]) => {
     try {
-      const querySnapshot = await getDocs(collection(db, collectionName));
+      let q: any = collection(db, collectionName);
+      
+      if (conditions && conditions.length > 0) {
+        q = query(q, ...conditions);
+      }
+      
+      const querySnapshot = await getDocs(q);
       const documents: any[] = [];
+      
       querySnapshot.forEach((doc) => {
-        documents.push({ id: doc.id, ...doc.data() });
+        documents.push({ id: doc.id, ...(doc.data() as any) });
       });
+      
       return { success: true, data: documents };
     } catch (error: any) {
       return { success: false, error: error.message };
