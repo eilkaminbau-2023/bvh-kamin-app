@@ -8,11 +8,12 @@ import {
   getDocs, 
   getDoc,
   query,
+  CollectionReference,
+  DocumentData,
   Query
 } from 'firebase/firestore';
 
 export const useFirestore = () => {
-  // Belge ekle
   const addDocument = async (collectionName: string, data: any) => {
     try {
       const docRef = await addDoc(collection(db, collectionName), {
@@ -26,7 +27,6 @@ export const useFirestore = () => {
     }
   };
 
-  // Belge güncelle
   const updateDocument = async (collectionName: string, id: string, data: any) => {
     try {
       const docRef = doc(db, collectionName, id);
@@ -37,7 +37,6 @@ export const useFirestore = () => {
     }
   };
 
-  // Belge sil
   const deleteDocument = async (collectionName: string, id: string) => {
     try {
       const docRef = doc(db, collectionName, id);
@@ -48,7 +47,6 @@ export const useFirestore = () => {
     }
   };
 
-  // Tek belge getir
   const getDocument = async (collectionName: string, id: string) => {
     try {
       const docRef = doc(db, collectionName, id);
@@ -63,16 +61,13 @@ export const useFirestore = () => {
     }
   };
 
-  // Tüm belgeleri getir
+  // En güvenli yöntem: TypeScript'i any ile tamamen özgür bırakıyoruz
   const getDocuments = async (collectionName: string, conditions?: any[]) => {
     try {
-      let q: any = collection(db, collectionName);
+      const colRef = collection(db, collectionName);
+      const q = conditions && conditions.length > 0 ? query(colRef, ...conditions) : colRef;
       
-      if (conditions && conditions.length > 0) {
-        q = query(q, ...conditions);
-      }
-      
-      const querySnapshot = await getDocs(q);
+      const querySnapshot = await getDocs(q as any);
       const documents: any[] = [];
       
       querySnapshot.forEach((doc) => {
